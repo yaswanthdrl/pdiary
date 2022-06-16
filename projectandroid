@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AbsoluteLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+     >
+
+    <TextView
+        android:layout_width="135dp"
+        android:layout_height="51dp"
+        android:layout_x="118dp"
+        android:layout_y="23dp"
+        android:text="Diary"
+        android:textColor="@color/white"
+        android:textSize="40sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="20dp"
+        android:layout_y="110dp"
+        android:text="Date:"
+        android:textColor="@color/white"
+        android:textSize="25sp" />
+
+
+    <EditText
+        android:id="@+id/ddate"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_x="116dp"
+        android:layout_y="105dp"
+        android:inputType="date"
+        android:hint="dd/mm/yy"
+        android:textColorHint="@color/white"
+        android:textColor="@color/white"
+        android:textSize="20sp" />
+
+    <TextView
+        android:layout_width="87dp"
+        android:layout_height="51dp"
+        android:layout_x="135dp"
+        android:layout_y="179dp"
+        android:text="Start:"
+        android:textColor="@color/white"
+        android:textSize="25sp" />
+
+    <EditText
+        android:id="@+id/ddata"
+        android:layout_width="377dp"
+        android:layout_height="307dp"
+        android:layout_x="14dp"
+        android:layout_y="231dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:textColor="@color/white"
+        android:inputType="textMultiLine" />
+
+    <Button
+        android:id="@+id/Insert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="55dp"
+        android:layout_y="578dp"
+        android:background="@color/black"
+        android:text="write"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/View"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_x="253dp"
+        android:layout_y="579dp"
+
+        android:background="@color/black"
+        android:text="Read"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:visibility="invisible"/>
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="67dp"
+        android:layout_height="61dp"
+        android:layout_x="166dp"
+        android:layout_y="659dp"
+        android:background="@color/black"
+        android:onClick="jp"
+        android:text="📚"
+        android:textSize="40sp" />
+
+</AbsoluteLayout>
+package com.example.prdiary;
+import android.app.Activity;
+import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.EditText;
+import android.widget.Button;
+
+public class MainActivity extends Activity implements OnClickListener
+{
+    EditText Rollno,Name;
+    Button Insert,Delete,View,explore;
+    SQLiteDatabase db;
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Rollno=(EditText)findViewById(R.id.ddate);
+        Name=(EditText)findViewById(R.id.ddata);
+        explore=(Button)findViewById(R.id.button1);
+        Insert= (Button) findViewById(R.id.Insert);
+        //Delete= (Button) findViewById(R.id.Delete);
+        View=(Button)findViewById(R.id.View);
+        Insert.setOnClickListener(this);
+       // Delete.setOnClickListener(this);
+        View.setOnClickListener(this);
+        // Creating database and table
+        db=openOrCreateDatabase("student", Context.MODE_PRIVATE, null);
+        db.execSQL("CREATE TABLE IF NOT EXISTS student(rollno VARCHAR,name VARCHAR);");
+    }
+    public void onClick(View view)
+    {
+        if(view==Insert)
+        {
+            if(Rollno.getText().toString().trim().length()==0||
+                    Name.getText().toString().trim().length()==0
+                    )
+            {
+                showMessage("please enter all fields");
+                return;
+            }
+            db.execSQL("INSERT INTO student VALUES('"+Rollno.getText()+"','"+Name.getText()+
+                    "');");
+            showMessage("Data saved📕");
+            clearText();
+        }
+        // Deleting a record from the Student table
+
+        if(view==View)
+        {
+            // Checking for empty roll number
+            if(Rollno.getText().toString().trim().length()==0)
+            {
+                showMessage("Please enter Date📅");
+                return;
+            }
+            Cursor c=db.rawQuery("SELECT * FROM student WHERE rollno='"+Rollno.getText()+"'", null);
+            if(c.moveToFirst())
+            {
+                Name.setText(c.getString(1));
+
+            }
+            else
+            {
+                showMessage("No Data found");
+                clearText();
+            }
+        }
+
+
+    }
+    public void showMessage(String message)
+    {
+        Builder builder=new Builder(this);
+        builder.setCancelable(true);
+        builder.setMessage(message);
+        builder.show();
+    }
+    public void clearText()
+    {
+        Rollno.setText("");
+        Name.setText("");
+        Rollno.requestFocus();
+    }
+
+    public void jp(View view) {
+        Insert.setVisibility(view.VISIBLE);
+        View.setVisibility(view.VISIBLE);
+    }
+}
